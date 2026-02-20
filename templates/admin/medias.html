@@ -1,0 +1,60 @@
+{% extends "admin/base_admin.html" %}
+{% block page_title %}Médiathèque{% endblock %}
+{% block content %}
+
+<!-- UPLOAD -->
+<div class="card mb-3">
+  <div class="card-body">
+    <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">📤 Uploader un fichier</h2>
+    <form method="post" enctype="multipart/form-data" style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap;">
+      <div style="flex:1;min-width:250px;">
+        <label class="form-label">Fichier (image, vidéo mp4, PDF)</label>
+        <input type="file" name="fichier" class="form-control" accept="image/*,video/mp4,.pdf" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Uploader</button>
+    </form>
+    <div class="form-hint" style="margin-top:0.5rem;">Max 32Mo · Formats: JPG, PNG, GIF, WebP, MP4, PDF</div>
+  </div>
+</div>
+
+<!-- GALERIE -->
+{% if medias %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;">
+    {% for m in medias %}
+      <div class="card" style="overflow:hidden;">
+        <!-- PREVIEW -->
+        <div style="height:140px;background:var(--bg3);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          {% if m.type_media == 'image' %}
+            <img src="{{ url_for('static', filename='uploads/' + m.nom_fichier) }}" 
+                 style="width:100%;height:100%;object-fit:cover;" alt="">
+          {% elif m.type_media == 'video' %}
+            <video src="{{ url_for('static', filename='uploads/' + m.nom_fichier) }}"
+                   style="width:100%;height:100%;object-fit:cover;" muted></video>
+          {% else %}
+            <span style="font-size:3rem;">📄</span>
+          {% endif %}
+        </div>
+        <div style="padding:0.75rem;">
+          <div style="font-size:0.78rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ m.nom_original }}">{{ m.nom_original }}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.2rem;">{{ m.taille|taille_fichier }}</div>
+          <!-- URL à copier -->
+          <div style="margin-top:0.5rem;display:flex;gap:0.35rem;">
+            <input readonly value="/static/uploads/{{ m.nom_fichier }}" 
+                   onclick="this.select();document.execCommand('copy');this.style.borderColor='var(--success)';setTimeout(()=>this.style.borderColor='',1500);"
+                   style="flex:1;font-size:0.7rem;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.4rem;color:var(--text-muted);cursor:pointer;"
+                   title="Cliquer pour copier le chemin">
+            <form action="{{ url_for('admin_supprimer_media', id=m.id) }}" method="post" onsubmit="return confirm('Supprimer ?')">
+              <button class="btn btn-danger btn-sm" style="padding:0.25rem 0.5rem;">✕</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div style="text-align:center;padding:4rem;color:var(--text-muted);">
+    <div style="font-size:3rem;margin-bottom:1rem;">🖼</div>
+    <p>Aucun média uploadé. Utilisez le formulaire ci-dessus pour commencer.</p>
+  </div>
+{% endif %}
+{% endblock %}

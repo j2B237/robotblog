@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}À propos – RobotJournal{% endblock %}
+{% block content %}
+<main style="max-width:800px;">
+  <div style="padding-top:1rem;margin-bottom:3rem;">
+    <h1 class="section-title">À <span>Propos</span></h1>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;margin-bottom:2rem;">
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div style="font-size:6rem;margin-bottom:1rem;">🤖</div>
+      <h2 style="font-size:1.6rem;font-weight:700;">Le Projet Humanoïde</h2>
+      <p style="color:var(--text-muted);margin-top:0.5rem;">Construire un robot humanoïde de zéro – chroniqué jour par jour</p>
+    </div>
+
+    <div class="article-content">
+      <h2>Qui suis-je ?</h2>
+      <p>Passionné de robotique, d'IA et d'électronique, j'ai décidé de me lancer dans le projet le plus ambitieux que j'aie jamais tenté : construire un robot humanoïde de A à Z.</p>
+      <p>Ce blog est mon carnet de bord. Chaque jour, ou presque, je documente ce que j'apprends, ce que je construis, ce qui casse, et ce qui fonctionne.</p>
+
+      <h2>Pourquoi ce projet ?</h2>
+      <p>La robotique humanoïde est à un tournant fascinant. Des entreprises comme Boston Dynamics, Tesla ou Figure AI repoussent les limites. En construisant mon propre robot, j'espère :</p>
+      <ul>
+        <li>Comprendre les défis réels de la locomotion bipède</li>
+        <li>Maîtriser l'intégration mécanique / électronique / logicielle</li>
+        <li>Apprendre les algorithmes d'équilibre et de contrôle</li>
+        <li>Explorer l'IA embarquée et la vision par ordinateur</li>
+      </ul>
+
+      <h2>Stack technique envisagée</h2>
+      <ul>
+        <li><strong>Actionneurs</strong> – Servomoteurs Dynamixel / moteurs DC brushless</li>
+        <li><strong>Cerveau</strong> – Raspberry Pi 5 + microcontrôleurs STM32</li>
+        <li><strong>Capteurs</strong> – IMU 9-DOF, caméra stéréo, lidar</li>
+        <li><strong>Framework</strong> – ROS2 (Robot Operating System)</li>
+        <li><strong>Structure</strong> – Impression 3D + aluminium usiné</li>
+        <li><strong>IA</strong> – OpenCV, PyTorch, modèles de langage embarqués</li>
+      </ul>
+
+      <h2>Plan du projet</h2>
+      <p>Le projet est découpé en 5 grandes phases, chacune documentée en détail dans ce journal. Consultez la <a href="{{ url_for('timeline') }}">Timeline du projet</a> pour l'avancement détaillé.</p>
+
+      <h2>Contact & Partage</h2>
+      <p>Ce projet est documenté en open-source. N'hésitez pas à suivre l'avancement, poser des questions ou partager vos propres expériences en robotique !</p>
+    </div>
+  </div>
+</main>
+{% endblock %}

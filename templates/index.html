@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="hero">
+  <div style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:20px;padding:0.35rem 1rem;font-size:0.85rem;color:var(--primary);margin-bottom:1.5rem;">
+    <span>⚡</span> Projet en cours · <strong>Jour {{ dernier_jour }}</strong>
+  </div>
+  <h1>Construire un <span class="accent">Robot Humanoïde</span><br>de Zéro</h1>
+  <p>Un ingénieur, une vision, des composants, du code et beaucoup de tentatives ratées. Suivez mon aventure jour par jour pour construire un robot humanoïde fonctionnel.</p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+    <a href="{{ url_for('journal') }}" class="btn btn-primary">📖 Lire le journal</a>
+    <a href="{{ url_for('timeline') }}" class="btn btn-outline">📅 Voir la timeline</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-number">{{ dernier_jour }}</div><div class="stat-label">Jours de projet</div></div>
+    <div class="stat"><div class="stat-number">{{ nb_articles }}</div><div class="stat-label">Articles publiés</div></div>
+    <div class="stat"><div class="stat-number">5</div><div class="stat-label">Phases du projet</div></div>
+  </div>
+</div>
+
+<main>
+  <!-- CATEGORIE PILLS -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;">
+      <a href="{{ url_for('journal') }}" class="btn btn-outline btn-sm">📓 Tous</a>
+      {% for slug, nom in categories.items() %}
+        <a href="{{ url_for('categorie', cat=slug) }}" class="btn btn-outline btn-sm">{{ nom }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ARTICLES RECENTS -->
+  <div class="section-header">
+    <h2 class="section-title">Derniers <span>Articles</span></h2>
+    <p class="section-sub">Les entrées les plus récentes du journal de bord</p>
+  </div>
+
+  {% if articles %}
+    <!-- Article vedette -->
+    {% set art = articles[0] %}
+    <div class="card mb-3" style="margin-bottom:2rem;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;min-height:300px;">
+        <div style="background:var(--bg3);display:flex;align-items:center;justify-content:center;">
+          {% if art.image_couverture %}
+            <img src="{{ url_for('static', filename='uploads/' + art.image_couverture) }}" style="width:100%;height:100%;object-fit:cover;" alt="">
+          {% else %}
+            <div style="font-size:5rem;text-align:center;">🤖</div>
+          {% endif %}
+        </div>
+        <div style="padding:2rem;display:flex;flex-direction:column;justify-content:center;">
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap;">
+            {% if art.jour %}<span class="badge badge-day">J{{ art.jour }}</span>{% endif %}
+            <span class="badge badge-cat">{{ categories.get(art.categorie, art.categorie) }}</span>
+            <span style="color:var(--text-muted);font-size:0.82rem;align-self:center;">{{ art.date_publication|date_fr }}</span>
+          </div>
+          <h2 style="font-size:1.8rem;font-weight:700;margin-bottom:0.75rem;line-height:1.25;">
+            <a href="{{ url_for('article', slug=art.slug) }}" style="color:var(--text);text-decoration:none;">{{ art.titre }}</a>
+          </h2>
+          {% if art.resume %}<p style="color:var(--text-muted);margin-bottom:1.25rem;">{{ art.resume }}</p>{% endif %}
+          <a href="{{ url_for('article', slug=art.slug) }}" class="btn btn-primary" style="width:fit-content;">Lire l'article →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grille des autres articles -->
+    {% if articles|length > 1 %}
+      <div class="grid-3">
+        {% for art in articles[1:] %}
+          <div class="card">
+            {% if art.image_couverture %}
+              <img src="{{ url_for('static', filename='uploads/' + art.image_couverture) }}" class="card-img" alt="">
+            {% else %}
+              <div class="card-img-placeholder">
+                {% if art.categorie == 'mecanique' %}🔧
+                {% elif art.categorie == 'electronique' %}⚡
+                {% elif art.categorie == 'programmation' %}💻
+                {% elif art.categorie == 'ia' %}🧠
+                {% elif art.categorie == 'tests' %}🧪
+                {% else %}📓{% endif %}
+              </div>
+            {% endif %}
+            <div class="card-body">
+              <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;">
+                {% if art.jour %}<span class="badge badge-day">J{{ art.jour }}</span>{% endif %}
+                <span class="badge badge-cat">{{ categories.get(art.categorie, art.categorie) }}</span>
+              </div>
+              <div class="card-title"><a href="{{ url_for('article', slug=art.slug) }}">{{ art.titre }}</a></div>
+              {% if art.resume %}<div class="card-resume">{{ art.resume[:120] }}{% if art.resume|length > 120 %}…{% endif %}</div>{% endif %}
+              <div class="card-meta mt-2">{{ art.date_publication|date_fr }} · 👁 {{ art.vues }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div style="text-align:center;margin-top:2.5rem;">
+      <a href="{{ url_for('journal') }}" class="btn btn-outline">Voir tous les articles →</a>
+    </div>
+  {% else %}
+    <div style="text-align:center;padding:4rem 2rem;color:var(--text-muted);">
+      <div style="font-size:4rem;margin-bottom:1rem;">🤖</div>
+      <p>Le journal de bord sera rempli bientôt. Revenez demain !</p>
+      {% if session.admin %}<a href="{{ url_for('admin_nouvel_article') }}" class="btn btn-primary mt-2">Créer le premier article</a>{% endif %}
+    </div>
+  {% endif %}
+
+  <!-- INTRO DU PROJET -->
+  <div style="margin-top:5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:3rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;">
+    <div>
+      <h2 style="font-size:1.8rem;font-weight:700;margin-bottom:1rem;">Le projet en <span style="color:var(--primary);">5 phases</span></h2>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        {% for phase, desc in [
+          ('🗺️ Phase 1', 'Architecture & Conception'),
+          ('🦴 Phase 2', 'Structure mécanique'),
+          ('⚡ Phase 3', 'Électronique & Capteurs'),
+          ('💻 Phase 4', 'Programmation & IA'),
+          ('🧪 Phase 5', 'Tests & Intégration'),
+        ] %}
+          <div style="display:flex;align-items:center;gap:1rem;padding:0.75rem;background:var(--bg3);border-radius:8px;">
+            <span style="font-size:1.3rem;">{{ phase.split()[0] }}</span>
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;">{{ phase.split(' ', 1)[1] }}</div>
+              <div style="color:var(--text-muted);font-size:0.83rem;">{{ desc }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:7rem;line-height:1;margin-bottom:1rem;">🤖</div>
+      <p style="color:var(--text-muted);">De l'idée au robot marchant, ce blog documente chaque étape, chaque erreur, chaque victoire.</p>
+      <a href="{{ url_for('a_propos') }}" class="btn btn-outline mt-2">En savoir plus →</a>
+    </div>
+  </div>
+</main>
+
+{% endblock %}

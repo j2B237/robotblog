@@ -1,0 +1,184 @@
+{% extends "admin/base_admin.html" %}
+{% block page_title %}{% if article %}Modifier l'article{% else %}Nouvel article{% endif %}{% endblock %}
+{% block content %}
+
+<form method="post" enctype="multipart/form-data">
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:2rem;align-items:start;">
+    
+    <!-- COLONNE PRINCIPALE -->
+    <div>
+      <div class="form-group">
+        <label class="form-label">Titre de l'article *</label>
+        <input type="text" name="titre" class="form-control" required
+               value="{{ article.titre if article else '' }}" 
+               placeholder="Ex: Jour 5 – Premier test du servomoteur"
+               style="font-size:1.1rem;font-weight:600;">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Résumé (affiché sur la liste et les cartes)</label>
+        <textarea name="resume" class="form-control" rows="2" 
+                  placeholder="Courte description de l'article (150 caractères max)">{{ article.resume if article else '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contenu HTML *</label>
+        
+        <!-- BARRE D'OUTILS ÉDITEUR -->
+        <div class="editor-toolbar">
+          <button type="button" onclick="wrapTag('h2')" title="Titre H2">H2</button>
+          <button type="button" onclick="wrapTag('h3')" title="Titre H3">H3</button>
+          <button type="button" onclick="wrapTag('p')" title="Paragraphe">¶</button>
+          <button type="button" onclick="wrapTag('strong')" title="Gras"><strong>G</strong></button>
+          <button type="button" onclick="wrapTag('em')" title="Italique"><em>I</em></button>
+          <button type="button" onclick="wrapTag('code')" title="Code inline">⌨</button>
+          <button type="button" onclick="insertBlock('pre')" title="Bloc de code">{'}'}</button>
+          <button type="button" onclick="insertLink()" title="Lien">🔗</button>
+          <button type="button" onclick="insertImage()" title="Image">🖼</button>
+          <button type="button" onclick="insertVideo()" title="Vidéo YouTube">▶</button>
+          <button type="button" onclick="insertList('ul')" title="Liste">• Liste</button>
+          <button type="button" onclick="insertList('ol')" title="Liste numérotée">1. Liste</button>
+          <button type="button" onclick="insertBlock('blockquote')" title="Citation">❝</button>
+          <button type="button" onclick="insertTable()" title="Tableau">⊞</button>
+          <button type="button" onclick="insertCallout('info')" title="Note info">ℹ</button>
+          <button type="button" onclick="insertCallout('warning')" title="Note attention">⚠</button>
+        </div>
+        <textarea name="contenu" id="contenu" class="form-control" 
+                  placeholder="Rédigez le contenu HTML de votre article...">{{ article.contenu if article else '' }}</textarea>
+      </div>
+    </div>
+
+    <!-- COLONNE DROITE -->
+    <div style="position:sticky;top:1rem;">
+      
+      <div class="card mb-2">
+        <div class="card-body">
+          <h3 style="font-size:0.95rem;font-weight:600;margin-bottom:1rem;">📤 Publication</h3>
+          <label class="form-check mb-2">
+            <input type="checkbox" name="publie" {% if article and article.publie %}checked{% endif %}>
+            <span>Publier immédiatement</span>
+          </label>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+            <a href="{{ url_for('admin_articles') }}" class="btn btn-outline">Annuler</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-2">
+        <div class="card-body">
+          <h3 style="font-size:0.95rem;font-weight:600;margin-bottom:1rem;">🏷 Métadonnées</h3>
+          <div class="form-group">
+            <label class="form-label">Numéro du jour</label>
+            <input type="number" name="jour" class="form-control" min="1"
+                   value="{{ article.jour if article and article.jour else '' }}"
+                   placeholder="Ex: 5">
+            <div class="form-hint">Laissez vide si ce n'est pas une entrée de journal</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Catégorie</label>
+            <select name="categorie" class="form-control">
+              {% for slug, nom in categories.items() %}
+                <option value="{{ slug }}" {% if article and article.categorie == slug %}selected{% endif %}>{{ nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags (séparés par des virgules)</label>
+            <input type="text" name="tags" class="form-control"
+                   value="{{ article.tags if article else '' }}"
+                   placeholder="servo, raspberry pi, mécanique">
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-2">
+        <div class="card-body">
+          <h3 style="font-size:0.95rem;font-weight:600;margin-bottom:1rem;">🖼 Image de couverture</h3>
+          {% if article and article.image_couverture %}
+            <img src="{{ url_for('static', filename='uploads/' + article.image_couverture) }}" 
+                 style="width:100%;border-radius:6px;margin-bottom:0.75rem;" alt="">
+          {% endif %}
+          <input type="file" name="image_couverture" class="form-control" accept="image/*">
+          <div class="form-hint">JPG, PNG, WebP – max 10Mo</div>
+          
+          <div style="margin-top:1rem;">
+            <div class="form-hint" style="margin-bottom:0.5rem;">Ou collez une URL d'image de la médiathèque :</div>
+            <a href="{{ url_for('admin_medias') }}" target="_blank" class="btn btn-outline btn-sm">📁 Médiathèque</a>
+          </div>
+        </div>
+      </div>
+
+      {% if article %}
+        <div class="card">
+          <div class="card-body">
+            <h3 style="font-size:0.95rem;font-weight:600;margin-bottom:0.75rem;color:var(--danger);">Zone danger</h3>
+            <form action="{{ url_for('admin_supprimer_article', id=article.id) }}" method="post" onsubmit="return confirm('Supprimer définitivement cet article ?')">
+              <button class="btn btn-danger btn-sm" style="width:100%;">🗑 Supprimer l'article</button>
+            </form>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</form>
+
+<script>
+const ta = document.getElementById('contenu');
+
+function getSelected() {
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  return { start, end, text: ta.value.substring(start, end) };
+}
+
+function insert(newText, cursorOffset = 0) {
+  const { start, end } = getSelected();
+  ta.value = ta.value.substring(0, start) + newText + ta.value.substring(end);
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = start + newText.length - cursorOffset;
+}
+
+function wrapTag(tag) {
+  const { text } = getSelected();
+  const content = text || 'Texte ici';
+  insert(`<${tag}>${content}</${tag}>\n`);
+}
+
+function insertBlock(tag) {
+  insert(`<${tag}>\n  Contenu ici\n</${tag}>\n`);
+}
+
+function insertLink() {
+  const url = prompt('URL du lien :') || 'https://';
+  const { text } = getSelected();
+  insert(`<a href="${url}">${text || 'Texte du lien'}</a>`);
+}
+
+function insertImage() {
+  const url = prompt('Chemin de l\'image (ex: /static/uploads/mon-image.jpg) :');
+  if (url) insert(`<img src="${url}" alt="Description de l'image" style="max-width:100%;">\n`);
+}
+
+function insertVideo() {
+  const url = prompt('URL YouTube (ex: https://www.youtube.com/watch?v=XXXXX) :');
+  if (!url) return;
+  const match = url.match(/(?:v=|youtu\.be\/)([^&\n]+)/);
+  const id = match ? match[1] : url;
+  insert(`<div class="video-embed"><iframe src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe></div>\n`);
+}
+
+function insertList(type) {
+  insert(`<${type}>\n  <li>Élément 1</li>\n  <li>Élément 2</li>\n  <li>Élément 3</li>\n</${type}>\n`);
+}
+
+function insertTable() {
+  insert(`<table>\n  <thead><tr><th>Col 1</th><th>Col 2</th><th>Col 3</th></tr></thead>\n  <tbody>\n    <tr><td>Valeur</td><td>Valeur</td><td>Valeur</td></tr>\n  </tbody>\n</table>\n`);
+}
+
+function insertCallout(type) {
+  const colors = { info: '#00d4ff', warning: '#f59e0b', success: '#10b981' };
+  const icons = { info: 'ℹ️', warning: '⚠️', success: '✅' };
+  insert(`<div style="background:rgba(${type==='info'?'0,212,255':'245,158,11'},0.1);border-left:3px solid ${colors[type]||colors.info};border-radius:6px;padding:1rem;margin:1rem 0;">\n  ${icons[type]} <strong>Note :</strong> Votre message ici\n</div>\n`);
+}
+</script>
+{% endblock %}

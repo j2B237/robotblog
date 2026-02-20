@@ -1,0 +1,70 @@
+{% extends "admin/base_admin.html" %}
+{% block page_title %}Timeline{% endblock %}
+{% block content %}
+
+<div style="display:grid;grid-template-columns:350px 1fr;gap:2rem;align-items:start;">
+  <!-- FORMULAIRE -->
+  <div class="card">
+    <div class="card-body">
+      <h2 style="font-size:1rem;font-weight:600;margin-bottom:1.25rem;">➕ Ajouter une étape</h2>
+      <form method="post">
+        <div class="form-group">
+          <label class="form-label">Titre *</label>
+          <input type="text" name="titre" class="form-control" required placeholder="Ex: Construction du torse">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="3" placeholder="Détails de cette étape..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" name="date_event" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Statut</label>
+          <select name="statut" class="form-control">
+            <option value="planifie">⬜ Planifié</option>
+            <option value="en-cours">🔵 En cours</option>
+            <option value="complete">✅ Complété</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icône (emoji)</label>
+          <input type="text" name="icone" class="form-control" value="🔧" placeholder="🔧 ⚡ 🧠 🦿 🚀">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Ajouter l'étape</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- LISTE -->
+  <div>
+    <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Étapes actuelles ({{ etapes|length }})</h2>
+    {% for etape in etapes %}
+      <div class="card mb-2" style="{% if etape.statut == 'en-cours' %}border-color:rgba(0,212,255,0.4);{% elif etape.statut == 'complete' %}border-color:rgba(16,185,129,0.4);{% endif %}">
+        <div class="card-body" style="padding:1rem;">
+          <div class="flex justify-between align-center">
+            <div class="flex align-center gap-1">
+              <span style="font-size:1.3rem;">{{ etape.icone }}</span>
+              <div>
+                <div style="font-weight:600;">{{ etape.titre }}</div>
+                {% if etape.description %}<div style="font-size:0.82rem;color:var(--text-muted);">{{ etape.description[:80] }}{% if etape.description|length > 80 %}…{% endif %}</div>{% endif %}
+              </div>
+            </div>
+            <div class="flex align-center gap-1">
+              {% if etape.statut == 'complete' %}<span class="badge badge-success">✅</span>
+              {% elif etape.statut == 'en-cours' %}<span class="badge" style="background:rgba(0,212,255,0.15);color:var(--primary);">🔵</span>
+              {% else %}<span class="badge" style="background:var(--bg3);color:var(--text-muted);">⬜</span>{% endif %}
+              <form action="{{ url_for('admin_supprimer_etape', id=etape.id) }}" method="post" onsubmit="return confirm('Supprimer ?')">
+                <button class="btn btn-danger btn-sm">🗑</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <p style="color:var(--text-muted);">Aucune étape définie.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

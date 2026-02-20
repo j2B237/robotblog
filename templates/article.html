@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{{ article.titre }} – RobotJournal{% endblock %}
+{% block content %}
+<main>
+  <div class="layout-sidebar">
+    <!-- ARTICLE PRINCIPAL -->
+    <article>
+      <!-- EN-TÊTE -->
+      <header style="margin-bottom:2rem;">
+        <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+          {% if article.jour %}<span class="badge badge-day" style="font-size:0.9rem;padding:0.3rem 0.8rem;">Jour {{ article.jour }}</span>{% endif %}
+          <a href="{{ url_for('categorie', cat=article.categorie) }}" class="badge badge-cat" style="font-size:0.9rem;padding:0.3rem 0.8rem;text-decoration:none;">{{ article.categorie }}</a>
+        </div>
+        <h1 style="font-size:clamp(1.6rem, 4vw, 2.4rem);font-weight:800;line-height:1.2;margin-bottom:1rem;">{{ article.titre }}</h1>
+        <div style="display:flex;gap:1rem;align-items:center;color:var(--text-muted);font-size:0.9rem;flex-wrap:wrap;">
+          <span>📅 {{ article.date_publication|date_fr }}</span>
+          <span>👁 {{ article.vues }} vues</span>
+        </div>
+        {% if article.image_couverture %}
+          <img src="{{ url_for('static', filename='uploads/' + article.image_couverture) }}" 
+               style="width:100%;border-radius:var(--radius);margin-top:1.5rem;max-height:450px;object-fit:cover;" alt="{{ article.titre }}">
+        {% endif %}
+      </header>
+
+      <!-- CONTENU -->
+      <div class="article-content">
+        {{ article.contenu|safe }}
+      </div>
+
+      <!-- TAGS -->
+      {% if article.tags %}
+        <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+          <span style="color:var(--text-muted);font-size:0.85rem;margin-right:0.75rem;">Tags :</span>
+          {% for tag in article.get_tags_list() %}
+            <span class="tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- NAVIGATION PREV/NEXT -->
+      {% if precedent or suivant %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+          {% if precedent %}
+            <a href="{{ url_for('article', slug=precedent.slug) }}" 
+               style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;text-decoration:none;color:var(--text);display:block;">
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.3rem;">← Article précédent</div>
+              <div style="font-size:0.9rem;font-weight:500;">{{ precedent.titre }}</div>
+            </a>
+          {% else %}<div></div>{% endif %}
+          {% if suivant %}
+            <a href="{{ url_for('article', slug=suivant.slug) }}" 
+               style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;text-decoration:none;color:var(--text);display:block;text-align:right;">
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.3rem;">Article suivant →</div>
+              <div style="font-size:0.9rem;font-weight:500;">{{ suivant.titre }}</div>
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </article>
+
+    <!-- SIDEBAR -->
+    <aside>
+      {% if session.admin %}
+        <div class="sidebar-widget" style="border-color:rgba(0,212,255,0.3);">
+          <div class="sidebar-title">⚙️ Admin</div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            <a href="{{ url_for('admin_modifier_article', id=article.id) }}" class="btn btn-outline btn-sm">✏️ Modifier</a>
+            <form action="{{ url_for('admin_supprimer_article', id=article.id) }}" method="post" onsubmit="return confirm('Supprimer ?')">
+              <button class="btn btn-danger btn-sm" style="width:100%;">🗑️ Supprimer</button>
+            </form>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- PARTAGE LIENS -->
+      <div class="sidebar-widget">
+        <div class="sidebar-title">🔗 Partager</div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+          <a href="https://twitter.com/intent/tweet?text={{ article.titre|urlencode }}&url={{ request.url|urlencode }}" 
+             target="_blank" class="btn btn-outline btn-sm">𝕏 Twitter/X</a>
+          <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url|urlencode }}&title={{ article.titre|urlencode }}" 
+             target="_blank" class="btn btn-outline btn-sm">💼 LinkedIn</a>
+          <button onclick="navigator.clipboard.writeText(window.location.href);this.textContent='✅ Copié !'" class="btn btn-outline btn-sm">🔗 Copier le lien</button>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div class="sidebar-widget">
+        <div class="sidebar-title">📂 Catégories</div>
+        <div style="display:flex;flex-direction:column;gap:0.4rem;">
+          {% for slug, nom in [
+            ('journal','📓 Journal de bord'),
+            ('mecanique','🔧 Mécanique'),
+            ('electronique','⚡ Électronique'),
+            ('programmation','💻 Programmation'),
+            ('ia','🧠 Intelligence Artificielle'),
+            ('tests','🧪 Tests & Résultats'),
+          ] %}
+            <a href="{{ url_for('categorie', cat=slug) }}" 
+               style="color:var(--text-muted);text-decoration:none;font-size:0.9rem;padding:0.35rem 0;display:flex;align-items:center;gap:0.5rem;border-bottom:1px solid var(--border);">
+              {{ nom }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- PROGRESS PROJET -->
+      <div class="sidebar-widget">
+        <div class="sidebar-title">📊 Avancement</div>
+        {% for phase, pct, color in [
+          ('Conception', 80, '#10b981'),
+          ('Mécanique', 45, '#00d4ff'),
+          ('Électronique', 20, '#f59e0b'),
+          ('Programmation', 10, '#ff6b35'),
+          ('Tests', 5, '#8b5cf6'),
+        ] %}
+          <div style="margin-bottom:0.75rem;">
+            <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.25rem;">
+              <span>{{ phase }}</span><span style="color:var(--text-muted);">{{ pct }}%</span>
+            </div>
+            <div style="background:var(--bg3);border-radius:4px;height:6px;">
+              <div style="width:{{ pct }}%;background:{{ color }};height:6px;border-radius:4px;"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </aside>
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Ressources – RobotJournal{% endblock %}
+{% block content %}
+<main>
+  <div class="section-header" style="padding-top:1rem;">
+    <h1 class="section-title">📚 <span>Ressources</span></h1>
+    <p class="section-sub">Composants, logiciels, tutoriels et outils utilisés dans le projet</p>
+  </div>
+
+  {% for cat, liste in ressources_par_cat.items() %}
+    <div style="margin-bottom:3rem;">
+      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1.25rem;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;">
+        {% if cat == 'composants' %}🔩 Composants
+        {% elif cat == 'logiciels' %}💾 Logiciels
+        {% elif cat == 'tutoriels' %}🎓 Tutoriels
+        {% elif cat == 'inspiration' %}💡 Inspiration
+        {% else %}{{ cat }}{% endif %}
+      </h2>
+      <div class="grid-3">
+        {% for r in liste %}
+          <div class="card" style="cursor:default;">
+            <div class="card-body">
+              <div class="card-title">
+                {% if r.url %}<a href="{{ r.url }}" target="_blank" style="color:var(--text);">{{ r.titre }} 🔗</a>
+                {% else %}{{ r.titre }}{% endif %}
+              </div>
+              {% if r.description %}<p class="card-resume">{{ r.description }}</p>{% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <p style="color:var(--text-muted);text-align:center;padding:3rem;">Aucune ressource ajoutée pour l'instant.</p>
+  {% endfor %}
+</main>
+{% endblock %}

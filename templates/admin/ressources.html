@@ -1,0 +1,68 @@
+{% extends "admin/base_admin.html" %}
+{% block page_title %}Ressources{% endblock %}
+{% block content %}
+
+<div style="display:grid;grid-template-columns:350px 1fr;gap:2rem;align-items:start;">
+  <div class="card">
+    <div class="card-body">
+      <h2 style="font-size:1rem;font-weight:600;margin-bottom:1.25rem;">➕ Ajouter une ressource</h2>
+      <form method="post">
+        <div class="form-group">
+          <label class="form-label">Titre *</label>
+          <input type="text" name="titre" class="form-control" required placeholder="Ex: ROS2 Documentation">
+        </div>
+        <div class="form-group">
+          <label class="form-label">URL</label>
+          <input type="url" name="url" class="form-control" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Catégorie</label>
+          <select name="categorie" class="form-control">
+            <option value="composants">🔩 Composants</option>
+            <option value="logiciels">💾 Logiciels</option>
+            <option value="tutoriels">🎓 Tutoriels</option>
+            <option value="inspiration">💡 Inspiration</option>
+            <option value="outils">🛠 Outils</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ordre</label>
+          <input type="number" name="ordre" class="form-control" value="0" min="0">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Ajouter</button>
+      </form>
+    </div>
+  </div>
+
+  <div>
+    <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Ressources ({{ ressources|length }})</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th>Titre</th><th>Catégorie</th><th>URL</th><th></th></tr></thead>
+        <tbody>
+          {% for r in ressources %}
+            <tr>
+              <td><div style="font-weight:500;">{{ r.titre }}</div>
+                {% if r.description %}<div style="font-size:0.78rem;color:var(--text-muted);">{{ r.description[:60] }}</div>{% endif %}
+              </td>
+              <td><span style="font-size:0.82rem;color:var(--text-muted);">{{ r.categorie }}</span></td>
+              <td>{% if r.url %}<a href="{{ r.url }}" target="_blank" style="font-size:0.82rem;color:var(--primary);">🔗 Lien</a>{% endif %}</td>
+              <td>
+                <form action="{{ url_for('admin_supprimer_ressource', id=r.id) }}" method="post" onsubmit="return confirm('Supprimer ?')">
+                  <button class="btn btn-danger btn-sm">🗑</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted);">Aucune ressource.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin – RobotJournal{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #00d4ff; --bg: #0a0e1a; --bg2: #111827; --bg3: #1f2937;
+      --surface: #1a2035; --border: #2d3748; --text: #e2e8f0;
+      --text-muted: #94a3b8; --success: #10b981; --danger: #ef4444;
+      --warning: #f59e0b; --radius: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .admin-sidebar {
+      width: 240px; background: var(--bg2); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 1.5rem; border-bottom: 1px solid var(--border);
+      font-weight: 700; font-size: 1.1rem; color: var(--primary);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .sidebar-logo a { color: inherit; text-decoration: none; }
+    .sidebar-nav { padding: 1rem 0.75rem; flex: 1; }
+    .sidebar-section { font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted); padding: 0.5rem 0.5rem; margin-top: 0.75rem; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.6rem 0.75rem; border-radius: 8px; text-decoration: none;
+      color: var(--text-muted); font-size: 0.9rem; font-weight: 500;
+      margin-bottom: 0.15rem; transition: all 0.15s;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(0,212,255,0.1); color: var(--primary); }
+    .sidebar-footer { padding: 1rem; border-top: 1px solid var(--border); }
+    .sidebar-footer a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; display: block; padding: 0.4rem; }
+    .sidebar-footer a:hover { color: var(--text); }
+
+    /* MAIN */
+    .admin-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .admin-topbar {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 56px; display: flex; align-items: center;
+      justify-content: space-between; sticky; top: 0;
+    }
+    .admin-topbar h1 { font-size: 1.1rem; font-weight: 600; }
+    .admin-content { padding: 2rem; flex: 1; }
+
+    /* FORMS */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-size: 0.88rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--text-muted); }
+    .form-control {
+      width: 100%; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.65rem 0.9rem; color: var(--text);
+      font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .form-control:focus { border-color: var(--primary); }
+    textarea.form-control { resize: vertical; min-height: 120px; }
+    select.form-control { cursor: pointer; }
+    .form-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem; }
+    .form-check { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; }
+    .form-check input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.2rem;
+      border-radius: 8px; font-weight: 500; font-size: 0.9rem; text-decoration: none;
+      border: none; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: #0a0e1a; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { opacity: 0.85; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-sm { padding: 0.35rem 0.8rem; font-size: 0.82rem; }
+
+    /* CARDS */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+    .card-body { padding: 1.5rem; }
+    .stat-card { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    .stat-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .stat-info .number { font-size: 1.8rem; font-weight: 700; }
+    .stat-info .label { color: var(--text-muted); font-size: 0.85rem; }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--bg3); padding: 0.65rem 1rem; text-align: left; font-size: 0.82rem;
+      color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    td { padding: 0.75rem 1rem; border-top: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* ALERTS */
+    .alert { padding: 0.9rem 1.25rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid currentColor; }
+    .alert-success { background: rgba(16,185,129,0.1); color: var(--success); }
+    .alert-danger { background: rgba(239,68,68,0.1); color: var(--danger); }
+    .alert-info { background: rgba(0,212,255,0.1); color: var(--primary); }
+
+    /* BADGES */
+    .badge { display: inline-flex; align-items: center; padding: 0.2rem 0.55rem;
+      border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .badge-success { background: rgba(16,185,129,0.15); color: var(--success); }
+    .badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .badge-danger { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+    /* GRID */
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 1.5rem; }
+
+    /* EDITOR */
+    .editor-toolbar {
+      background: var(--bg3); border: 1px solid var(--border); border-bottom: none;
+      border-radius: 8px 8px 0 0; padding: 0.5rem 0.75rem;
+      display: flex; gap: 0.3rem; flex-wrap: wrap;
+    }
+    .editor-toolbar button {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 5px;
+      color: var(--text); cursor: pointer; padding: 0.25rem 0.55rem; font-size: 0.85rem;
+      transition: all 0.15s;
+    }
+    .editor-toolbar button:hover { background: rgba(0,212,255,0.15); border-color: var(--primary); color: var(--primary); }
+    #contenu { border-radius: 0 0 8px 8px; min-height: 400px; font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; }
+
+    /* UTIL */
+    .flex { display: flex; } .gap-1 { gap: 0.5rem; } .gap-2 { gap: 1rem; }
+    .align-center { align-items: center; } .justify-between { justify-content: space-between; }
+    .mb-2 { margin-bottom: 1rem; } .mb-3 { margin-bottom: 1.5rem; }
+    .text-muted { color: var(--text-muted); } .text-sm { font-size: 0.85rem; }
+    @media (max-width: 768px) { .admin-sidebar { display: none; } .grid-4, .grid-2 { grid-template-columns: 1fr; } }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <span>🤖</span>
+      <a href="{{ url_for('admin_dashboard') }}">RobotJournal</a>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">Navigation</div>
+      <a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if request.endpoint == 'admin_dashboard' }}">📊 Dashboard</a>
+      <div class="sidebar-section">Contenu</div>
+      <a href="{{ url_for('admin_articles') }}" class="{{ 'active' if 'article' in request.endpoint }}">📝 Articles</a>
+      <a href="{{ url_for('admin_nouvel_article') }}" class="{{ 'active' if request.endpoint == 'admin_nouvel_article' }}">✏️ Nouvel article</a>
+      <a href="{{ url_for('admin_medias') }}" class="{{ 'active' if request.endpoint == 'admin_medias' }}">🖼️ Médiathèque</a>
+      <div class="sidebar-section">Projet</div>
+      <a href="{{ url_for('admin_timeline') }}" class="{{ 'active' if request.endpoint == 'admin_timeline' }}">📅 Timeline</a>
+      <a href="{{ url_for('admin_ressources') }}" class="{{ 'active' if request.endpoint == 'admin_ressources' }}">📚 Ressources</a>
+      <div class="sidebar-section">Blog public</div>
+      <a href="{{ url_for('index') }}" target="_blank">🔗 Voir le blog</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="{{ url_for('admin_logout') }}">🚪 Se déconnecter</a>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h1>{% block page_title %}Administration{% endblock %}</h1>
+      <div class="flex gap-2 align-center">
+        <a href="{{ url_for('admin_nouvel_article') }}" class="btn btn-primary btn-sm">✏️ Nouvel article</a>
+      </div>
+    </div>
+    <div class="admin-content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</body>
+</html>

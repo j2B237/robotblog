@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Journal de bord – RobotJournal{% endblock %}
+{% block content %}
+<main>
+  <div class="section-header" style="padding-top:1rem;">
+    <h1 class="section-title">Journal de <span>Bord</span></h1>
+    <p class="section-sub">Chaque jour, une nouvelle entrée du projet humanoïde</p>
+  </div>
+
+  <!-- FILTRES CATEGORIES -->
+  <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:2rem;">
+    <a href="{{ url_for('journal') }}" class="btn btn-primary btn-sm">Tous</a>
+    {% for slug, nom in categories.items() %}
+      <a href="{{ url_for('categorie', cat=slug) }}" class="btn btn-outline btn-sm">{{ nom }}</a>
+    {% endfor %}
+  </div>
+
+  {% if articles.items %}
+    <div class="grid-3">
+      {% for art in articles.items %}
+        <div class="card">
+          {% if art.image_couverture %}
+            <img src="{{ url_for('static', filename='uploads/' + art.image_couverture) }}" class="card-img" alt="">
+          {% else %}
+            <div class="card-img-placeholder">
+              {% if art.categorie == 'mecanique' %}🔧
+              {% elif art.categorie == 'electronique' %}⚡
+              {% elif art.categorie == 'programmation' %}💻
+              {% elif art.categorie == 'ia' %}🧠
+              {% elif art.categorie == 'tests' %}🧪
+              {% elif art.categorie == 'reflexion' %}💭
+              {% else %}📓{% endif %}
+            </div>
+          {% endif %}
+          <div class="card-body">
+            <div style="display:flex;gap:0.4rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+              {% if art.jour %}<span class="badge badge-day">Jour {{ art.jour }}</span>{% endif %}
+              <span class="badge badge-cat">{{ categories.get(art.categorie, art.categorie) }}</span>
+            </div>
+            <div class="card-title"><a href="{{ url_for('article', slug=art.slug) }}">{{ art.titre }}</a></div>
+            {% if art.resume %}<p class="card-resume">{{ art.resume[:130] }}{% if art.resume|length > 130 %}…{% endif %}</p>{% endif %}
+            <div class="flex gap-1 align-center mt-2" style="flex-wrap:wrap;">
+              <span class="card-meta">{{ art.date_publication|date_fr }}</span>
+              <span class="card-meta">·</span>
+              <span class="card-meta">👁 {{ art.vues }}</span>
+              {% for tag in art.get_tags_list()[:2] %}
+                <span class="tag">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    {% if articles.pages > 1 %}
+      <div class="pagination">
+        {% if articles.has_prev %}
+          <a href="{{ url_for('journal', page=articles.prev_num) }}">←</a>
+        {% endif %}
+        {% for p in articles.iter_pages() %}
+          {% if p %}
+            <a href="{{ url_for('journal', page=p) }}" class="{{ 'active' if p == articles.page }}">{{ p }}</a>
+          {% else %}
+            <span>…</span>
+          {% endif %}
+        {% endfor %}
+        {% if articles.has_next %}
+          <a href="{{ url_for('journal', page=articles.next_num) }}">→</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div style="text-align:center;padding:5rem 1rem;color:var(--text-muted);">
+      <div style="font-size:4rem;margin-bottom:1rem;">📭</div>
+      <p>Aucun article dans cette section pour l'instant.</p>
+    </div>
+  {% endif %}
+</main>
+{% endblock %}

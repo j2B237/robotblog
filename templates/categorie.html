@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ nom_cat }} – RobotJournal{% endblock %}
+{% block content %}
+<main>
+  <div class="section-header" style="padding-top:1rem;">
+    <a href="{{ url_for('journal') }}" style="color:var(--text-muted);text-decoration:none;font-size:0.9rem;">← Retour au journal</a>
+    <h1 class="section-title mt-2">{{ nom_cat }}</h1>
+  </div>
+  {% if articles.items %}
+    <div class="grid-3">
+      {% for art in articles.items %}
+        <div class="card">
+          {% if art.image_couverture %}
+            <img src="{{ url_for('static', filename='uploads/' + art.image_couverture) }}" class="card-img" alt="">
+          {% else %}
+            <div class="card-img-placeholder">📖</div>
+          {% endif %}
+          <div class="card-body">
+            {% if art.jour %}<span class="badge badge-day mb-1">Jour {{ art.jour }}</span>{% endif %}
+            <div class="card-title"><a href="{{ url_for('article', slug=art.slug) }}">{{ art.titre }}</a></div>
+            {% if art.resume %}<p class="card-resume">{{ art.resume[:120] }}…</p>{% endif %}
+            <div class="card-meta mt-2">{{ art.date_publication|date_fr }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    {% if articles.pages > 1 %}
+      <div class="pagination">
+        {% if articles.has_prev %}<a href="{{ url_for('categorie', cat=cat, page=articles.prev_num) }}">←</a>{% endif %}
+        {% for p in articles.iter_pages() %}
+          {% if p %}<a href="{{ url_for('categorie', cat=cat, page=p) }}" class="{{ 'active' if p == articles.page }}">{{ p }}</a>
+          {% else %}<span>…</span>{% endif %}
+        {% endfor %}
+        {% if articles.has_next %}<a href="{{ url_for('categorie', cat=cat, page=articles.next_num) }}">→</a>{% endif %}
+      </div>
+    {% endif %}
+  {% else %}
+    <p style="color:var(--text-muted);text-align:center;padding:3rem;">Aucun article dans cette catégorie.</p>
+  {% endif %}
+</main>
+{% endblock %}

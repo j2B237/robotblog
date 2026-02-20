@@ -1,0 +1,58 @@
+{% extends "admin/base_admin.html" %}
+{% block page_title %}Articles{% endblock %}
+{% block content %}
+<div class="flex justify-between align-center mb-3">
+  <div>
+    <h2 style="font-size:1.1rem;font-weight:600;">Tous les articles ({{ articles|length }})</h2>
+    <p class="text-muted text-sm">Journal de bord du projet</p>
+  </div>
+  <a href="{{ url_for('admin_nouvel_article') }}" class="btn btn-primary">✏️ Nouvel article</a>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Jour</th>
+        <th>Catégorie</th>
+        <th>Statut</th>
+        <th>Date</th>
+        <th>Vues</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for art in articles %}
+        <tr>
+          <td style="max-width:280px;">
+            <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ art.titre }}</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);">{{ art.slug }}</div>
+          </td>
+          <td>{% if art.jour %}<span style="color:var(--primary);font-weight:600;">J{{ art.jour }}</span>{% else %}—{% endif %}</td>
+          <td><span style="font-size:0.82rem;">{{ categories.get(art.categorie, art.categorie) }}</span></td>
+          <td>
+            {% if art.publie %}<span class="badge badge-success">✅ Publié</span>
+            {% else %}<span class="badge badge-warning">📄 Brouillon</span>{% endif %}
+          </td>
+          <td style="font-size:0.82rem;color:var(--text-muted);">{{ art.date_creation|date_fr }}</td>
+          <td style="font-size:0.85rem;">{{ art.vues }}</td>
+          <td>
+            <div class="flex gap-1">
+              <a href="{{ url_for('admin_modifier_article', id=art.id) }}" class="btn btn-outline btn-sm">✏️</a>
+              {% if art.publie %}
+                <a href="{{ url_for('article', slug=art.slug) }}" target="_blank" class="btn btn-outline btn-sm">👁</a>
+              {% endif %}
+              <form action="{{ url_for('admin_supprimer_article', id=art.id) }}" method="post" onsubmit="return confirm('Supprimer cet article ?')">
+                <button class="btn btn-danger btn-sm">🗑</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--text-muted);">Aucun article. <a href="{{ url_for('admin_nouvel_article') }}" style="color:var(--primary);">Créer le premier</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Timeline du projet – RobotJournal{% endblock %}
+{% block content %}
+<main>
+  <div class="section-header" style="padding-top:1rem;">
+    <h1 class="section-title">Timeline du <span>Projet</span></h1>
+    <p class="section-sub">Toutes les étapes, de la conception à la réalisation</p>
+  </div>
+
+  <!-- LÉGENDE -->
+  <div style="display:flex;gap:1rem;margin-bottom:2.5rem;flex-wrap:wrap;">
+    <span class="badge badge-success">✅ Complété</span>
+    <span class="badge" style="background:rgba(0,212,255,0.15);color:var(--primary);border:1px solid rgba(0,212,255,0.3);">🔵 En cours</span>
+    <span class="badge" style="background:var(--bg3);color:var(--text-muted);border:1px solid var(--border);">⬜ Planifié</span>
+  </div>
+
+  <div class="timeline">
+    {% for etape in etapes %}
+      <div class="tl-item">
+        <div class="tl-dot {{ etape.statut }}">{{ etape.icone }}</div>
+        <div class="tl-content" style="{% if etape.statut == 'en-cours' %}border-color:rgba(0,212,255,0.4);{% elif etape.statut == 'complete' %}border-color:rgba(16,185,129,0.4);{% endif %}">
+          <div style="display:flex;justify-content:space-between;align-items:start;gap:1rem;flex-wrap:wrap;">
+            <div class="tl-title">{{ etape.titre }}</div>
+            <div>
+              {% if etape.statut == 'complete' %}<span class="badge badge-success">✅ Complété</span>
+              {% elif etape.statut == 'en-cours' %}<span class="badge" style="background:rgba(0,212,255,0.15);color:var(--primary);">🔵 En cours</span>
+              {% else %}<span class="badge" style="background:var(--bg3);color:var(--text-muted);">⬜ Planifié</span>{% endif %}
+            </div>
+          </div>
+          {% if etape.description %}<div class="tl-desc">{{ etape.description }}</div>{% endif %}
+          {% if etape.date_event %}<div class="tl-date">📅 {{ etape.date_event|date_fr }}</div>{% endif %}
+        </div>
+      </div>
+    {% else %}
+      <p style="color:var(--text-muted);">Aucune étape définie pour l'instant.</p>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

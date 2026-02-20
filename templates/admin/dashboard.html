@@ -1,0 +1,96 @@
+{% extends "admin/base_admin.html" %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="grid-4 mb-3">
+  <div class="card">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(0,212,255,0.15);">📝</div>
+      <div class="stat-info"><div class="number">{{ nb_articles }}</div><div class="label">Articles total</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(16,185,129,0.15);">✅</div>
+      <div class="stat-info"><div class="number">{{ nb_publies }}</div><div class="label">Publiés</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(245,158,11,0.15);">📁</div>
+      <div class="stat-info"><div class="number">{{ nb_medias }}</div><div class="label">Médias</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(255,107,53,0.15);">📅</div>
+      <div class="stat-info"><div class="number">{{ nb_articles - nb_publies }}</div><div class="label">Brouillons</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-body">
+      <div class="flex justify-between align-center mb-2">
+        <h2 style="font-size:1rem;font-weight:600;">Articles récents</h2>
+        <a href="{{ url_for('admin_nouvel_article') }}" class="btn btn-primary btn-sm">+ Nouveau</a>
+      </div>
+      <table>
+        <thead><tr><th>Titre</th><th>Jour</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for art in articles_recents %}
+            <tr>
+              <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ art.titre }}</td>
+              <td>{% if art.jour %}<span style="color:var(--primary);">J{{ art.jour }}</span>{% else %}—{% endif %}</td>
+              <td>
+                {% if art.publie %}<span class="badge badge-success">Publié</span>
+                {% else %}<span class="badge badge-warning">Brouillon</span>{% endif %}
+              </td>
+              <td>
+                <div class="flex gap-1">
+                  <a href="{{ url_for('admin_modifier_article', id=art.id) }}" class="btn btn-outline btn-sm">✏️</a>
+                  {% if art.publie %}<a href="{{ url_for('article', slug=art.slug) }}" target="_blank" class="btn btn-outline btn-sm">👁</a>{% endif %}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div style="margin-top:1rem;">
+        <a href="{{ url_for('admin_articles') }}" class="btn btn-outline btn-sm">Voir tous les articles →</a>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card mb-2">
+      <div class="card-body">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Actions rapides</h2>
+        <div style="display:flex;flex-direction:column;gap:0.6rem;">
+          <a href="{{ url_for('admin_nouvel_article') }}" class="btn btn-primary">✏️ Écrire un article</a>
+          <a href="{{ url_for('admin_medias') }}" class="btn btn-outline">🖼️ Gérer les médias</a>
+          <a href="{{ url_for('admin_timeline') }}" class="btn btn-outline">📅 Mettre à jour la timeline</a>
+          <a href="{{ url_for('admin_ressources') }}" class="btn btn-outline">📚 Ajouter une ressource</a>
+          <a href="{{ url_for('index') }}" target="_blank" class="btn btn-outline">🔗 Voir le blog</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:0.75rem;">💡 Raccourcis HTML articles</h2>
+        <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.9;font-family:'JetBrains Mono',monospace;">
+          <div>&lt;h2&gt;Titre section&lt;/h2&gt;</div>
+          <div>&lt;p&gt;Paragraphe&lt;/p&gt;</div>
+          <div>&lt;img src="/static/uploads/fichier.jpg"&gt;</div>
+          <div>&lt;div class="video-embed"&gt;&lt;iframe src="..."&gt;&lt;/iframe&gt;&lt;/div&gt;</div>
+          <div>&lt;a href="url"&gt;Lien&lt;/a&gt;</div>
+          <div>&lt;pre&gt;&lt;code&gt;Code&lt;/code&gt;&lt;/pre&gt;</div>
+          <div>&lt;blockquote&gt;Citation&lt;/blockquote&gt;</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
